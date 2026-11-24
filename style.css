@@ -1,0 +1,137 @@
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@700;900&family=Poppins:wght@400;600&display=swap');
+
+:root {
+    --neon-green: #39FF14;
+    --emerald: #00C853;
+    --dark-green: #063D25;
+    --lime: #B6FF4A;
+    --white: #FFFFFF;
+    --bg-color: #02120B;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+    background-color: var(--bg-color);
+    color: var(--white);
+    font-family: 'Poppins', sans-serif;
+    overflow-x: hidden;
+}
+
+#bg-canvas {
+    position: fixed;
+    top: 0; left: 0;
+    width: 100vw; height: 100vh;
+    z-index: -1;
+    pointer-events: none;
+}
+
+/* Navbar & Logo 3D */
+nav {
+    padding: 30px 50px;
+    position: absolute;
+    top: 0; width: 100%;
+    z-index: 10;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+.logo-3d {
+    font-family: 'Montserrat', sans-serif;
+    font-size: 2rem;
+    font-weight: 900;
+    color: var(--white);
+    text-shadow: 0px 1px 0px var(--emerald), 0px 2px 0px var(--emerald), 0px 3px 0px #009624, 0px 4px 0px #00701a, 0px 5px 10px rgba(0, 200, 83, 0.5);
+    letter-spacing: 2px;
+}
+.logo-3d span { color: var(--neon-green); }
+
+#btn-admin {
+    background: transparent;
+    color: var(--neon-green);
+    border: 1px solid var(--neon-green);
+    padding: 8px 15px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-family: 'Poppins', sans-serif;
+    transition: all 0.3s ease;
+}
+#btn-admin:hover { background: var(--neon-green); color: var(--bg-color); }
+
+/* Hero Section */
+.hero {
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    padding: 20px;
+}
+.hero-title {
+    font-family: 'Montserrat', sans-serif;
+    font-size: clamp(3rem, 8vw, 6rem);
+    line-height: 1.1;
+    text-transform: uppercase;
+    text-shadow: 0px 10px 20px rgba(57, 255, 20, 0.2);
+}
+.hero-title span { color: var(--neon-green); text-shadow: 0 0 20px rgba(57, 255, 20, 0.4); }
+.hero-sub { margin-top: 20px; font-size: 1.2rem; color: var(--lime); letter-spacing: 1px; }
+
+/* Panel Admin */
+#admin-panel {
+    display: none;
+    padding: 50px 20px;
+    background: rgba(6, 61, 37, 0.9);
+    text-align: center;
+    border-bottom: 2px solid var(--neon-green);
+    position: relative;
+    z-index: 5;
+}
+#admin-panel h2 { color: var(--neon-green); margin-bottom: 20px; font-family: 'Montserrat', sans-serif; }
+#admin-panel input {
+    padding: 12px; margin: 5px; border-radius: 5px; border: none; width: 250px;
+    font-family: 'Poppins', sans-serif; background: #111; color: #fff; border: 1px solid var(--emerald);
+}
+#btn-simpan {
+    padding: 12px 20px; background: var(--emerald); color: white; border: none; border-radius: 5px; font-weight: bold; cursor: pointer;
+    box-shadow: 0px 4px 0px #00701a; transition: all 0.1s;
+}
+#btn-simpan:active { transform: translateY(4px); box-shadow: 0px 0px 0px #00701a; }
+#btn-reset {
+    background: transparent; color: #ff4d4d; border: 1px solid #ff4d4d; padding: 8px 15px; border-radius: 5px; cursor: pointer; font-size: 12px; transition: 0.3s;
+}
+#btn-reset:hover { background: #ff4d4d; color: white; }
+
+/* Product Section & Card 3D */
+.product-section { padding: 100px 20px; display: flex; justify-content: center; }
+.grid-container {
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 30px; max-width: 1000px; width: 100%;
+}
+.card {
+    background: rgba(6, 61, 37, 0.4);
+    border: 1px solid rgba(57, 255, 20, 0.2);
+    border-radius: 15px; padding: 25px; backdrop-filter: blur(10px);
+    transition: transform 0.2s ease, box-shadow 0.3s ease;
+    transform-style: preserve-3d;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+}
+.card:hover { box-shadow: 0 15px 40px rgba(0, 200, 83, 0.3); border-color: var(--emerald); }
+.card-inner { transform: translateZ(30px); }
+.card h3 { font-family: 'Montserrat', sans-serif; font-size: 1.2rem; margin-bottom: 10px; color: var(--white); }
+.card .price { font-size: 1.5rem; font-weight: 700; color: var(--neon-green); margin-bottom: 20px; }
+
+/* Tombol 3D Pressed */
+.btn-buy {
+    width: 100%; padding: 12px; background: var(--emerald); color: var(--white); border: none; border-radius: 8px;
+    font-family: 'Montserrat', sans-serif; font-weight: 700; cursor: pointer;
+    box-shadow: 0px 5px 0px #00701a, 0px 10px 10px rgba(0,0,0,0.5); transition: all 0.1s ease;
+}
+.btn-buy:active { transform: translateY(5px); box-shadow: 0px 0px 0px #00701a, 0px 5px 10px rgba(0,0,0,0.5); }
+
+/* Responsif HP Android */
+@media (max-width: 768px) {
+    .grid-container { grid-template-columns: 1fr; padding: 0 10px; }
+    nav { padding: 20px; }
+    .card { padding: 20px; }
+    #admin-panel input { width: 100%; margin: 5px 0; }
+      }

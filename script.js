@@ -14,21 +14,17 @@ const produkDefault = [
 ];
 
 let daftarProduk = JSON.parse(localStorage.getItem('cayaProduk')) || produkDefault;
-let keranjang = JSON.parse(localStorage.getItem('cayaKeranjang')) || [];
+let isAdminLoggedIn = false;
 
 // ==========================================
-// 2. NAVIGASI TAB (BOTTOM NAV)
+// 2. NAVIGASI TAB
 // ==========================================
 window.switchTab = function(pageId, btnElement) {
     document.querySelectorAll('.page').forEach(page => page.classList.remove('active'));
     document.getElementById(pageId).classList.add('active');
     
     document.querySelectorAll('.nav-item').forEach(btn => btn.classList.remove('active'));
-    btnElement.classList.add('active');
-
-    if (pageId === 'page-checkout') {
-        renderHalamanCheckout();
-    }
+    if(btnElement) btnElement.classList.add('active');
 }
 
 // ==========================================
@@ -62,6 +58,11 @@ function renderProduk() {
     produkTampil.forEach((produk) => {
         const formatHarga = new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(produk.harga);
         
+        // TOMBOL HAPUS KHUSUS ADMIN
+        const tombolHapus = isAdminLoggedIn 
+            ? `<button onclick="hapusProdukAdmin('${produk.nama}')" style="background:#FF4D4D; color:white; border:none; padding:8px 10px; border-radius:8px; font-size:0.7rem; cursor:pointer; margin-left:8px; display:flex; align-items:center; gap:5px;"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg> Hapus</button>` 
+            : '';
+
         const card = document.createElement('div');
         card.className = 'card';
         card.innerHTML = `
@@ -71,7 +72,10 @@ function renderProduk() {
             </div>
             <div class="card-action">
                 <span class="price">${formatHarga}</span>
-                <button class="btn-buy" onclick="tambahKeKeranjang('${produk.nama}', ${produk.harga})">Beli</button>
+                <div style="display:flex; align-items:center; justify-content:flex-end;">
+                    <button class="btn-buy" onclick="beliLangsungWA('${produk.nama}', ${produk.harga})">Beli</button>
+                    ${tombolHapus}
+                </div>
             </div>
         `;
         productList.appendChild(card);
@@ -79,76 +83,11 @@ function renderProduk() {
 }
 
 // ==========================================
-// 4. LOGIKA KERANJANG
+// 4. BELI LANGSUNG WHATSAPP
 // ==========================================
-window.tambahKeKeranjang = function(nama, harga) {
-    keranjang.push({ nama, harga });
-    localStorage.setItem('cayaKeranjang', JSON.stringify(keranjang));
-    updateKeranjangCount();
-    alert(`UID ${nama} dimasukkan ke keranjang!`);
-}
-
-function updateKeranjangCount() {
-    document.getElementById('cart-count-header').innerText = keranjang.length;
-}
-
-function renderHalamanCheckout() {
-    const cartItemsPage = document.getElementById('cart-items-page');
-    const totalHargaPage = document.getElementById('total-harga-page');
-    
-    cartItemsPage.innerHTML = '';
-    let total = 0;
-
-    if (keranjang.length === 0) {
-        cartItemsPage.innerHTML = '<p style="text-align:center; color:#888;">Keranjang masih kosong.</p>';
-    } else {
-        keranjang.forEach((item, index) => {
-            total += item.harga;
-            const formatHarga = new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(item.harga);
-            cartItemsPage.innerHTML += `
-                <div class="cart-item">
-                    <div>
-                        <h4 style="font-family:monospace; font-size:1rem;">${item.nama}</h4>
-                        <p style="color:var(--emerald); font-weight:bold; font-size:0.9rem;">${formatHarga}</p>
-                    </div>
-                    <button class="btn-hapus" onclick="hapusDariKeranjang(${index})">Hapus</button>
-                </div>
-            `;
-        });
-    }
-    totalHargaPage.innerText = new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(total);
-}
-
-window.hapusDariKeranjang = function(index) {
-    keranjang.splice(index, 1);
-    localStorage.setItem('cayaKeranjang', JSON.stringify(keranjang));
-    updateKeranjangCount();
-    renderHalamanCheckout();
-}
-
-window.bukaKeranjang = function() {
-    const checkoutBtn = document.querySelectorAll('.nav-item')[1];
-    switchTab('page-checkout', checkoutBtn);
-}
-
-window.checkoutWA = function() {
-    if (keranjang.length === 0) {
-        alert("Keranjang masih kosong!");
-        return;
-    }
-    
-    let pesan = "Halo Admin CAYA Store,%0A%0ASaya ingin membeli UID berikut:%0A";
-    let total = 0;
-    
-    keranjang.forEach(item => {
-        const formatHarga = new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(item.harga);
-        pesan += `- ${item.nama} (${formatHarga})%0A`;
-        total += item.harga;
-    });
-    
-    const formatTotal = new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(total);
-    pesan += `%0A*Total: ${formatTotal}*%0A%0AApakah stoknya masih tersedia?`;
-    
+window.beliLangsungWA = function(namaProduk, hargaProduk) {
+    const formatHarga = new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(hargaProduk);
+    const pesan = `Halo Admin CAYA Store,%0A%0ASaya ingin membeli produk ini:%0A*Nama Produk:* ${namaProduk}%0A*Harga:* ${formatHarga}%0A%0AApakah stoknya masih tersedia?`;
     window.open(`https://wa.me/${nomorWA}?text=${pesan}`, '_blank');
 }
 
@@ -163,7 +102,6 @@ const inputNama = document.getElementById('input-nama');
 const inputHarga = document.getElementById('input-harga');
 const inputKatalog = document.getElementById('input-katalog');
 
-let isAdminLoggedIn = false;
 const logoTrigger = document.getElementById('logo-trigger');
 let klikCount = 0;
 let klikTimer;
@@ -187,8 +125,9 @@ btnAdmin.addEventListener('click', () => {
             const masukanPassword = prompt("Masukkan Password Admin:");
             if (masukanPassword === PASSWORD_ADMIN) {
                 isAdminLoggedIn = true;
-                alert("Login Berhasil!");
+                alert("Login Berhasil! Sekarang Anda bisa menghapus produk.");
                 adminPanel.style.display = 'block';
+                renderProduk(); 
             } else if (masukanPassword !== null) {
                 alert("Password Salah!");
             }
@@ -226,8 +165,20 @@ btnReset.addEventListener('click', () => {
     }
 });
 
+window.hapusProdukAdmin = function(namaProduk) {
+    if (!isAdminLoggedIn) {
+        alert("Anda bukan Admin!");
+        return;
+    }
+    if (confirm(`Yakin ingin menghapus produk UID ${namaProduk}?`)) {
+        daftarProduk = daftarProduk.filter(produk => produk.nama !== namaProduk);
+        localStorage.setItem('cayaProduk', JSON.stringify(daftarProduk));
+        renderProduk();
+        alert('Produk berhasil dihapus!');
+    }
+}
+
 // ==========================================
 // 6. INISIALISASI
 // ==========================================
 renderProduk();
-updateKeranjangCount();

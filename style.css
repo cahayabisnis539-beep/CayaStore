@@ -29,6 +29,28 @@ body::before {
     pointer-events: none;
 }
 
+/* --- Video Pembuka (Splash Screen) --- */
+#splash-screen {
+    position: fixed;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    background: #000;
+    z-index: 9999;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    transition: opacity 0.8s ease, visibility 0.8s;
+}
+#splash-screen.hidden {
+    opacity: 0;
+    visibility: hidden;
+}
+#intro-video {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
 /* --- Marquee --- */
 .marquee-container {
     background: linear-gradient(90deg, var(--text-dark), #004d5a);
@@ -86,25 +108,118 @@ header {
 }
 .search-filter input:focus { border-color: var(--blue-sky); }
 
-/* --- Product Grid & Card --- */
-.grid-container { display: grid; grid-template-columns: 1fr; gap: 15px; }
-.card {
-    background: var(--white); border-radius: 15px; padding: 20px; display: flex; justify-content: space-between; align-items: center;
-    box-shadow: 0 4px 15px rgba(0,0,0,0.03); border: 1px solid rgba(0,0,0,0.02); transition: transform 0.2s, box-shadow 0.2s;
-    position: relative; overflow: hidden;
+/* --- DESAIN CARD GAYA PIDZ STORE (TEMA HIJAU CAYA) --- */
+.grid-container { 
+    display: grid; 
+    grid-template-columns: repeat(2, 1fr); 
+    gap: 15px; 
 }
-.card::before {
-    content: 'TERSEDIA'; position: absolute; top: 10px; right: -30px;
-    background: var(--emerald); color: white; font-size: 0.6rem; font-weight: 800;
-    padding: 4px 30px; transform: rotate(45deg); letter-spacing: 1px;
+
+.card-pidz {
+    background: #FFFFFF;
+    border: 3px solid #000000;
+    border-radius: 15px;
+    padding: 12px;
+    box-shadow: 0 6px 0 #000000; 
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    position: relative;
+    overflow: hidden;
 }
-.card:hover { transform: translateY(-3px); box-shadow: 0 10px 25px rgba(0, 168, 255, 0.15); border-color: var(--blue-sky); }
-.card-info h3 { font-size: 1.1rem; font-family: monospace; font-weight: 800; color: var(--text-dark); margin-top: 5px; }
-.card-info .katalog-label { font-size: 0.7rem; color: var(--blue-sky); font-weight: 800; background: rgba(0, 168, 255, 0.1); padding: 3px 8px; border-radius: 6px; display: inline-block; }
-.card-action { text-align: right; }
-.card-action .price { font-size: 1.1rem; font-weight: 800; color: var(--emerald); display: block; margin-bottom: 10px; }
-.btn-buy { padding: 8px 20px; background: var(--text-dark); color: var(--white); border: none; border-radius: 8px; font-weight: 700; font-size: 0.85rem; cursor: pointer; transition: 0.2s; }
-.btn-buy:hover { background: var(--emerald); }
+
+.card-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+}
+.badge-kategori {
+    background: #075B68; 
+    color: #FFFFFF;
+    font-size: 0.65rem;
+    font-weight: 800;
+    padding: 4px 10px;
+    border-radius: 6px;
+    border: 2px solid #000000;
+}
+.badge-harga {
+    background: #B6FF4A; 
+    color: #000000;
+    font-size: 0.7rem;
+    font-weight: 900;
+    padding: 4px 8px;
+    border-radius: 6px;
+    border: 2px solid #000000;
+}
+
+.uid-box {
+    background: #043F47; 
+    border: 2px solid #000000;
+    border-radius: 10px;
+    padding: 10px;
+    text-align: center;
+    margin-bottom: 12px;
+    box-shadow: inset 0 0 10px rgba(0,0,0,0.5);
+}
+.uid-label {
+    display: block;
+    color: #A0AEC0; 
+    font-size: 0.55rem;
+    font-weight: 700;
+    margin-bottom: 4px;
+}
+.uid-number {
+    color: #B6FF4A; 
+    font-family: monospace;
+    font-size: 1.1rem;
+    font-weight: 800;
+    margin: 0;
+    letter-spacing: 1px;
+}
+
+.price-box {
+    text-align: center;
+    margin-bottom: 12px;
+}
+.price-label {
+    display: block;
+    font-size: 0.7rem;
+    color: #555555;
+    font-weight: 600;
+    margin-bottom: 2px;
+}
+.price-value {
+    color: #00C878; 
+    font-size: 1.3rem;
+    font-weight: 900;
+    font-style: italic;
+    -webkit-text-stroke: 1px #000000; 
+    text-shadow: 2px 2px 0 #000000; 
+}
+
+.card-bottom {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+.btn-buy-pidz {
+    width: 100%;
+    background: #00C878; 
+    color: #FFFFFF;
+    border: 3px solid #000000;
+    border-radius: 10px;
+    padding: 10px 0;
+    font-size: 0.8rem;
+    font-weight: 900;
+    cursor: pointer;
+    box-shadow: 0 4px 0 #000000; 
+    transition: transform 0.1s, box-shadow 0.1s;
+}
+.btn-buy-pidz:active {
+    transform: translateY(4px);
+    box-shadow: 0 0 0 #000000;
+}
 
 /* --- Features Section --- */
 .features-grid { display: grid; grid-template-columns: 1fr; gap: 15px; }
@@ -140,20 +255,11 @@ header {
 
 /* --- Responsif Desktop --- */
 @media (min-width: 768px) {
-    .grid-container { grid-template-columns: repeat(2, 1fr); }
     .features-grid { grid-template-columns: repeat(3, 1fr); }
     .search-filter { flex-direction: row; }
     .search-filter input { flex: 2; }
     .search-filter select { flex: 1; }
+    .grid-container { grid-template-columns: repeat(4, 1fr); }
     .bottom-nav { position: static; box-shadow: none; border-top: 1px solid #ddd; padding: 15px 0; background: transparent; }
     body { padding-bottom: 0; }
-}t(3, 1fr); }
-    .search-filter { flex-direction: row; }
-    .search-filter input { flex: 2; }
-    .search-filter select { flex: 1; }
-    .footer-content { flex-direction: row; justify-content: space-between; align-items: flex-start; }
-    .footer-brand { max-width: 350px; }
-    .footer-links, .footer-contact { flex: 1; text-align: left; padding-left: 20px; }
-    .bottom-nav { position: static; box-shadow: none; border-top: 1px solid #ddd; padding: 15px 0; background: transparent; }
-    body { padding-bottom: 0; }
-}
+               }

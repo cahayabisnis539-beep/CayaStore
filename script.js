@@ -1,4 +1,26 @@
 // ==========================================
+// 0. LOGIKA SPLASH SCREEN VIDEO 5 DETIK
+// ==========================================
+document.addEventListener("DOMContentLoaded", () => {
+    const splash = document.getElementById('splash-screen');
+    const video = document.getElementById('intro-video');
+
+    const hideSplash = () => {
+        if(splash) {
+            splash.classList.add('hidden');
+            if(video) video.pause(); 
+        }
+    };
+
+    if(video) {
+        video.addEventListener('ended', hideSplash);
+    }
+
+    // Paksa hilangkan setelah 5000 milidetik (5 detik)
+    setTimeout(hideSplash, 5000);
+});
+
+// ==========================================
 // 1. KONFIGURASI & DATABASE
 // ==========================================
 const nomorWA = "6282148252320"; // ⚠️ Nomor WA Anda
@@ -56,26 +78,35 @@ function renderProduk() {
     }
 
     produkTampil.forEach((produk) => {
-        const formatHarga = new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(produk.harga);
-        
-        // TOMBOL HAPUS KHUSUS ADMIN
+        const hargaAngka = new Intl.NumberFormat('id-ID').format(produk.harga);
+        const labelKategori = produk.katalog.split(' ')[0] || "INDO";
+        const badgeHarga = produk.katalog.split(' ')[1] || (produk.harga / 1000) + "K";
+
         const tombolHapus = isAdminLoggedIn 
-            ? `<button onclick="hapusProdukAdmin('${produk.nama}')" style="background:#FF4D4D; color:white; border:none; padding:8px 10px; border-radius:8px; font-size:0.7rem; cursor:pointer; margin-left:8px; display:flex; align-items:center; gap:5px;"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg> Hapus</button>` 
+            ? `<button onclick="hapusProdukAdmin('${produk.nama}')" style="background:#FF4D4D; color:white; border:2px solid #000; padding:8px 10px; border-radius:8px; font-size:0.7rem; font-weight:800; cursor:pointer; margin-top:8px; box-shadow: 0 3px 0 #000;">Hapus</button>` 
             : '';
 
         const card = document.createElement('div');
-        card.className = 'card';
+        card.className = 'card-pidz'; 
         card.innerHTML = `
-            <div class="card-info">
-                <span class="katalog-label">${produk.katalog}</span>
-                <h3>${produk.nama}</h3>
+            <div class="card-top">
+                <span class="badge-kategori">${labelKategori}</span>
+                <span class="badge-harga">${badgeHarga}</span>
             </div>
-            <div class="card-action">
-                <span class="price">${formatHarga}</span>
-                <div style="display:flex; align-items:center; justify-content:flex-end;">
-                    <button class="btn-buy" onclick="beliLangsungWA('${produk.nama}', ${produk.harga})">Beli</button>
-                    ${tombolHapus}
-                </div>
+            
+            <div class="uid-box">
+                <span class="uid-label">NOMOR UID (11 DIGIT)</span>
+                <h3 class="uid-number">${produk.nama}</h3>
+            </div>
+
+            <div class="price-box">
+                <span class="price-label">Harga produk</span>
+                <span class="price-value">RP ${hargaAngka}</span>
+            </div>
+
+            <div class="card-bottom">
+                <button class="btn-buy-pidz" onclick="beliLangsungWA('${produk.nama}', ${produk.harga})">BELI SEKARANG</button>
+                ${tombolHapus}
             </div>
         `;
         productList.appendChild(card);

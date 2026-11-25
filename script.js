@@ -1,45 +1,89 @@
 // ==========================================
-// 0. LOGIKA SPLASH SCREEN VIDEO 5 DETIK
-// ==========================================
-document.addEventListener("DOMContentLoaded", () => {
-    const splash = document.getElementById('splash-screen');
-    const video = document.getElementById('intro-video');
-
-    const hideSplash = () => {
-        if(splash) {
-            splash.classList.add('hidden');
-            if(video) video.pause(); 
-        }
-    };
-
-    if(video) {
-        video.addEventListener('ended', hideSplash);
-    }
-
-    // Paksa hilangkan setelah 5000 milidetik (5 detik)
-    setTimeout(hideSplash, 5000);
-});
-
-// ==========================================
 // 1. KONFIGURASI & DATABASE
 // ==========================================
 const nomorWA = "6282148252320"; // ⚠️ Nomor WA Anda
-const PASSWORD_ADMIN = "Badali2011";
+// Password tidak disimpan sebagai teks biasa, hanya hash PBKDF2-SHA256 (bukan kata sandinya).
+// Untuk mengganti password: hitung ulang hash dengan SALT dan ITERASI yang sama, lalu tempel di HASH_ADMIN.
+const SALT_ADMIN = "caya-store-v1";
+const ITER_ADMIN = 150000;
+const HASH_ADMIN = "2b8f1a07fa253e8eae936efb59c3fae5c862b49bddcf6929b75b028a5da8b9aa";
+
+async function hashPassword(pw) {
+    const enc = new TextEncoder();
+    const key = await crypto.subtle.importKey('raw', enc.encode(pw), 'PBKDF2', false, ['deriveBits']);
+    const bits = await crypto.subtle.deriveBits(
+        { name: 'PBKDF2', salt: enc.encode(SALT_ADMIN), iterations: ITER_ADMIN, hash: 'SHA-256' },
+        key, 256
+    );
+    return Array.from(new Uint8Array(bits)).map(b => b.toString(16).padStart(2, '0')).join('');
+}
 
 const produkDefault = [
     { nama: "16656131131", harga: 2000, katalog: "INDO 2K" },
     { nama: "16657777478", harga: 2000, katalog: "INDO 2K" },
     { nama: "16654101111", harga: 3000, katalog: "INDO 3K" },
-    { nama: "16815933333", harga: 3000, katalog: "INDO 3K" },
-    { nama: "16911456666", harga: 5000, katalog: "INDO 5K" },
-    { nama: "17011111841", harga: 5000, katalog: "INDO 5K" }
+    { nama: "16815933333", harga: 3000, katalog: "INDO 3K" }
 ];
 
 let daftarProduk = JSON.parse(localStorage.getItem('cayaProduk')) || produkDefault;
 let isAdminLoggedIn = false;
 
 // ==========================================
-// 2. NAVIGASI TAB
+// 2. INISIALISASI LIBRARY (GSAP, LENIS, LUCIDE, 3D)
+// ==========================================
+document.addEventListener("DOMContentLoaded", () => {
+    // A. Lucide Icons
+    lucide.createIcons();
+
+    // B. Lenis Smooth Scroll
+    const lenis = new Lenis({ duration: 1.2, smooth: true });
+    function raf(time) { lenis.raf(time); requestAnimationFrame(raf); }
+    requestAnimationFrame(raf);
+
+    // C. GSAP Animasi Teks Hero
+    gsap.from(".gsap-title", { y: 50, opacity: 0, duration: 1, delay: 0.2 });
+    gsap.from(".gsap-text", { y: 30, opacity: 0, duration: 1, delay: 0.5 });
+
+    // D. Three.js Logo 3D Berputar
+    initThreeJS();
+});
+
+// ==========================================
+// 3. THREE.JS LOGO
+// ==========================================
+function initThreeJS() {
+    const canvas = document.getElementById('logo-3d');
+    if(!canvas) return;
+    
+    const scene = new THREE.Scene();
+    const camera = new THREE.PerspectiveCamera(75, 1, 0.1, 1000);
+    const renderer = new THREE.WebGLRenderer({ canvas, alpha: true, antialias: true });
+    renderer.setSize(40, 40);
+
+    const geometry = new THREE.IcosahedronGeometry(1.5, 0);
+    const material = new THREE.MeshStandardMaterial({ 
+        color: 0x0EA5A4, // Teal
+        wireframe: true, 
+        transparent: true,
+        opacity: 0.8
+    });
+    const crystal = new THREE.Mesh(geometry, material);
+    scene.add(crystal);
+    
+    scene.add(new THREE.AmbientLight(0xffffff, 1));
+    camera.position.z = 3;
+
+    function animate3D() {
+        requestAnimationFrame(animate3D);
+        crystal.rotation.x += 0.01;
+        crystal.rotation.y += 0.015;
+        renderer.render(scene, camera);
+    }
+    animate3D();
+}
+
+// ==========================================
+// 4. NAVIGASI TAB
 // ==========================================
 window.switchTab = function(pageId, btnElement) {
     document.querySelectorAll('.page').forEach(page => page.classList.remove('active'));
@@ -50,30 +94,22 @@ window.switchTab = function(pageId, btnElement) {
 }
 
 // ==========================================
-// 3. RENDER PRODUK & FILTER
+// 5. RENDER PRODUK (SWIPER)
 // ==========================================
 const productList = document.getElementById('product-list');
+let swiperInstance = null;
 
 function renderProduk() {
     productList.innerHTML = ''; 
     
     const searchQuery = document.getElementById('search-input').value.toLowerCase();
-    const priceFilter = document.getElementById('price-filter').value;
 
     let produkTampil = daftarProduk.filter(produk => {
-        const matchSearch = produk.nama.toLowerCase().includes(searchQuery);
-        let matchPrice = true;
-        
-        if (priceFilter === '2k') matchPrice = produk.harga === 2000;
-        else if (priceFilter === '3k') matchPrice = produk.harga === 3000;
-        else if (priceFilter === '5k') matchPrice = produk.harga === 5000;
-        else if (priceFilter === '10k') matchPrice = produk.harga >= 10000;
-
-        return matchSearch && matchPrice;
+        return produk.nama.toLowerCase().includes(searchQuery);
     });
 
     if (produkTampil.length === 0) {
-        productList.innerHTML = `<p style="text-align:center; padding: 20px; color:#888;">UID tidak ditemukan.</p>`;
+        productList.innerHTML = `<div class="swiper-slide"><p style="text-align:center; padding: 20px;">UID Kosong</p></div>`;
         return;
     }
 
@@ -83,133 +119,152 @@ function renderProduk() {
         const badgeHarga = produk.katalog.split(' ')[1] || (produk.harga / 1000) + "K";
 
         const tombolHapus = isAdminLoggedIn 
-            ? `<button onclick="hapusProdukAdmin('${produk.nama}')" style="background:#FF4D4D; color:white; border:2px solid #000; padding:8px 10px; border-radius:8px; font-size:0.7rem; font-weight:800; cursor:pointer; margin-top:8px; box-shadow: 0 3px 0 #000;">Hapus</button>` 
+            ? `<button onclick="hapusProdukAdmin('${produk.nama}')" style="background:#FF4D4D; color:white; border:2px solid #000; padding:8px 10px; border-radius:8px; font-size:0.7rem; margin-top:8px;">Hapus</button>` 
             : '';
 
-        const card = document.createElement('div');
-        card.className = 'card-pidz'; 
-        card.innerHTML = `
-            <div class="card-top">
-                <span class="badge-kategori">${labelKategori}</span>
-                <span class="badge-harga">${badgeHarga}</span>
-            </div>
-            
-            <div class="uid-box">
-                <span class="uid-label">NOMOR UID (11 DIGIT)</span>
-                <h3 class="uid-number">${produk.nama}</h3>
-            </div>
-
-            <div class="price-box">
-                <span class="price-label">Harga produk</span>
-                <span class="price-value">RP ${hargaAngka}</span>
-            </div>
-
-            <div class="card-bottom">
-                <button class="btn-buy-pidz" onclick="beliLangsungWA('${produk.nama}', ${produk.harga})">BELI SEKARANG</button>
-                ${tombolHapus}
+        // Slide Swiper
+        const slide = document.createElement('div');
+        slide.className = 'swiper-slide';
+        slide.innerHTML = `
+            <div class="card-pidz motion-card">
+                <div class="card-top">
+                    <span class="badge-kategori">${labelKategori}</span>
+                    <span class="badge-harga">${badgeHarga}</span>
+                </div>
+                <div class="uid-box">
+                    <span class="uid-label">NOMOR UID</span>
+                    <h3 class="uid-number">${produk.nama}</h3>
+                </div>
+                <div class="price-box">
+                    <span class="price-label">Harga</span>
+                    <span class="price-value">RP ${hargaAngka}</span>
+                </div>
+                <div class="card-bottom">
+                    <button class="btn-buy-pidz" onclick="beliLangsungWA('${produk.nama}', ${produk.harga})">BELI</button>
+                    ${tombolHapus}
+                </div>
             </div>
         `;
-        productList.appendChild(card);
+        productList.appendChild(slide);
+    });
+
+    // Inisialisasi Ulang Swiper
+    if (swiperInstance) swiperInstance.destroy(true, true);
+    swiperInstance = new Swiper(".mySwiper", {
+        slidesPerView: 1.5,
+        spaceBetween: 15,
+        pagination: { el: ".swiper-pagination", clickable: true },
+        breakpoints: {
+            768: { slidesPerView: 3, spaceBetween: 20 }
+        }
     });
 }
 
 // ==========================================
-// 4. BELI LANGSUNG WHATSAPP
+// 6. BELI LANGSUNG WHATSAPP (SWEETALERT)
 // ==========================================
 window.beliLangsungWA = function(namaProduk, hargaProduk) {
-    const formatHarga = new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(hargaProduk);
-    const pesan = `Halo Admin CAYA Store,%0A%0ASaya ingin membeli produk ini:%0A*Nama Produk:* ${namaProduk}%0A*Harga:* ${formatHarga}%0A%0AApakah stoknya masih tersedia?`;
-    window.open(`https://wa.me/${nomorWA}?text=${pesan}`, '_blank');
+    Swal.fire({
+        title: 'Konfirmasi Pembelian',
+        text: `Beli UID ${namaProduk} seharga Rp ${hargaProduk}?`,
+        icon: 'question',
+        showCancelButton: true,
+        confirmButtonColor: '#0EA5A4',
+        cancelButtonColor: '#d33',
+        confirmButtonText: 'Ya, Beli!',
+        cancelButtonText: 'Batal'
+    }).then((result) => {
+        if (result.isConfirmed) {
+            const formatHarga = new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(hargaProduk);
+            const pesan = `Halo Admin CAYA Store,%0A%0ASaya ingin membeli UID ini:%0A*Nama:* ${namaProduk}%0A*Harga:* ${formatHarga}`;
+            window.open(`https://wa.me/${nomorWA}?text=${pesan}`, '_blank');
+            Swal.fire('Berhasil!', 'Anda sedang diarahkan ke WhatsApp.', 'success');
+        }
+    });
 }
 
 // ==========================================
-// 5. LOGIKA ADMIN (RAHASIA)
+// 7. LOGIKA ADMIN
 // ==========================================
 const btnAdmin = document.getElementById('btn-admin');
 const adminPanel = document.getElementById('admin-panel');
-const btnSimpan = document.getElementById('btn-simpan');
-const btnReset = document.getElementById('btn-reset');
-const inputNama = document.getElementById('input-nama');
-const inputHarga = document.getElementById('input-harga');
-const inputKatalog = document.getElementById('input-katalog');
-
 const logoTrigger = document.getElementById('logo-trigger');
 let klikCount = 0;
-let klikTimer;
 
 logoTrigger.addEventListener('click', () => {
     klikCount++;
     if (klikCount === 5) {
-        btnAdmin.style.display = 'block';
-        alert("Mode Admin diaktifkan!");
+        btnAdmin.style.display = 'flex';
+        Swal.fire('Mode Admin', 'Tombol pengaturan telah muncul.', 'success');
         klikCount = 0;
-        clearTimeout(klikTimer);
     } else {
-        clearTimeout(klikTimer);
-        klikTimer = setTimeout(() => { klikCount = 0; }, 1500); 
+        setTimeout(() => { klikCount = 0; }, 1500); 
     }
 });
 
 btnAdmin.addEventListener('click', () => {
-    if (adminPanel.style.display === 'none' || adminPanel.style.display === '') {
-        if (!isAdminLoggedIn) {
-            const masukanPassword = prompt("Masukkan Password Admin:");
-            if (masukanPassword === PASSWORD_ADMIN) {
+    if (!isAdminLoggedIn) {
+        Swal.fire({
+            title: 'Masukkan Password',
+            input: 'password',
+            inputAttributes: { autocapitalize: 'off' },
+            showCancelButton: true,
+            confirmButtonText: 'Login',
+            confirmButtonColor: '#0EA5A4'
+        }).then(async (result) => {
+            if (!result.value) return;
+            let cocok = false;
+            try { cocok = (await hashPassword(result.value)) === HASH_ADMIN; } catch (e) {}
+            if (cocok) {
                 isAdminLoggedIn = true;
-                alert("Login Berhasil! Sekarang Anda bisa menghapus produk.");
+                Swal.fire('Berhasil!', 'Anda sekarang Admin.', 'success');
                 adminPanel.style.display = 'block';
-                renderProduk(); 
-            } else if (masukanPassword !== null) {
-                alert("Password Salah!");
+                renderProduk();
+            } else {
+                Swal.fire('Gagal', 'Password salah!', 'error');
             }
-        } else {
-            adminPanel.style.display = 'block';
-        }
+        });
     } else {
-        adminPanel.style.display = 'none';
+        adminPanel.style.display = adminPanel.style.display === 'none' ? 'block' : 'none';
     }
 });
 
-btnSimpan.addEventListener('click', () => {
-    const nama = inputNama.value.trim();
-    const harga = parseInt(inputHarga.value);
-    const katalog = inputKatalog.value.trim() || "Lainnya";
+document.getElementById('btn-simpan').addEventListener('click', () => {
+    const nama = document.getElementById('input-nama').value.trim();
+    const harga = parseInt(document.getElementById('input-harga').value);
+    const katalog = document.getElementById('input-katalog').value.trim() || "INDO";
 
     if (nama && harga) {
         daftarProduk.push({ nama, harga, katalog });
         localStorage.setItem('cayaProduk', JSON.stringify(daftarProduk));
-        
-        inputNama.value = ''; inputHarga.value = ''; inputKatalog.value = '';
+        document.getElementById('input-nama').value = '';
         renderProduk();
-        alert('Produk berhasil ditambahkan!');
+        Swal.fire('Sukses', 'Produk berhasil ditambahkan!', 'success');
     } else {
-        alert('Mohon isi nama dan harga dengan benar!');
-    }
-});
-
-btnReset.addEventListener('click', () => {
-    if (isAdminLoggedIn && confirm('Yakin ingin menghapus semua produk dan kembali ke awal?')) {
-        localStorage.removeItem('cayaProduk');
-        daftarProduk = [...produkDefault]; 
-        renderProduk();
-        alert('Produk telah di-reset.');
+        Swal.fire('Error', 'Isi nama dan harga!', 'error');
     }
 });
 
 window.hapusProdukAdmin = function(namaProduk) {
-    if (!isAdminLoggedIn) {
-        alert("Anda bukan Admin!");
-        return;
-    }
-    if (confirm(`Yakin ingin menghapus produk UID ${namaProduk}?`)) {
-        daftarProduk = daftarProduk.filter(produk => produk.nama !== namaProduk);
-        localStorage.setItem('cayaProduk', JSON.stringify(daftarProduk));
-        renderProduk();
-        alert('Produk berhasil dihapus!');
-    }
+    if (!isAdminLoggedIn) return;
+    Swal.fire({
+        title: 'Hapus Produk?',
+        text: "Produk akan dihapus permanen!",
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#d33',
+        confirmButtonText: 'Ya, Hapus!'
+    }).then((result) => {
+        if (result.isConfirmed) {
+            daftarProduk = daftarProduk.filter(p => p.nama !== namaProduk);
+            localStorage.setItem('cayaProduk', JSON.stringify(daftarProduk));
+            renderProduk();
+            Swal.fire('Terhapus!', 'Produk berhasil dihapus.', 'success');
+        }
+    });
 }
 
 // ==========================================
-// 6. INISIALISASI
+// 8. INISIALISASI AWAL
 // ==========================================
 renderProduk();

@@ -1,0 +1,43 @@
+/* Fitur AI: chatbot toko, asisten Islami, deskripsi UID */
+.ai-hide { display: none !important; }
+
+/* Tombol & panel chat melayang */
+#ai-fab {
+    position: fixed; right: 16px; bottom: 90px; z-index: 1100;
+    width: 54px; height: 54px; border-radius: 50%; cursor: pointer;
+    background: var(--emerald); color: #fff; font-size: 1.5rem;
+    border: 3px solid var(--text-dark); box-shadow: 0 4px 0 var(--text-dark);
+}
+#ai-fab:active { transform: translateY(3px); box-shadow: 0 1px 0 var(--text-dark); }
+#ai-panel {
+    position: fixed; right: 12px; bottom: 154px; z-index: 1100;
+    width: min(92vw, 380px); height: min(62vh, 480px);
+    display: none; flex-direction: column; overflow: hidden;
+    background: var(--bg-sec); border: 3px solid var(--text-dark); border-radius: 16px;
+    box-shadow: 0 6px 0 var(--text-dark);
+}
+#ai-panel.open { display: flex; }
+.ai-head { background: var(--text-dark); color: #fff; padding: 10px 14px; font-weight: 800; display: flex; justify-content: space-between; align-items: center; }
+.ai-head button { background: none; border: 0; color: #fff; font-size: 1.2rem; cursor: pointer; }
+
+/* Area pesan (dipakai widget dan tab Tanya) */
+.ai-log { flex: 1; overflow-y: auto; padding: 12px; display: flex; flex-direction: column; gap: 8px; }
+.ai-msg { max-width: 88%; padding: 9px 12px; border-radius: 12px; font-size: .88rem; line-height: 1.5; white-space: pre-wrap; word-wrap: break-word; }
+.ai-bot { align-self: flex-start; background: #e0f7fa; color: var(--text-dark); }
+.ai-user { align-self: flex-end; background: var(--emerald); color: #fff; }
+.ai-wait { opacity: .6; font-style: italic; }
+.ai-err { background: #fdeceb; color: #b3261e; }
+.ai-form { display: flex; gap: 8px; padding: 10px; border-top: 1px solid #d6e9ec; }
+.ai-form input { flex: 1; min-width: 0; padding: 10px 12px; border-radius: 10px; border: 1px solid rgba(56,189,248,.5); font-size: .9rem; outline: none; }
+.ai-form button { background: var(--emerald); color: #fff; border: 0; border-radius: 10px; padding: 0 16px; font-weight: 800; cursor: pointer; }
+.ai-form button:disabled { opacity: .5; }
+
+/* Tab Tanya di halaman Islami */
+#isl-tanya .ai-box { display: flex; flex-direction: column; height: 60vh; min-height: 320px; background: var(--bg-sec); border: 1px solid rgba(56,189,248,.3); border-radius: 15px; overflow: hidden; }
+.ai-note { font-size: .78rem; color: #666; margin: 8px 2px 0; }
+
+/* Deskripsi UID di kartu & panel admin */
+.uid-desc { font-size: .7rem; color: #555; text-align: center; margin: -4px 0 10px; line-height: 1.35; }
+.admin-form textarea { padding: 12px; border: 1px solid #ccc; border-radius: 8px; resize: vertical; min-height: 60px; }
+#btn-ai-desc { padding: 10px; background: var(--emerald); color: #fff; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; }
+#btn-ai-desc:disabled { opacity: .5; }
